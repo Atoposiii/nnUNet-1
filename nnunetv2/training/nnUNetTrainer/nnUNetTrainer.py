@@ -147,11 +147,11 @@ class nnUNetTrainer(object):
         self.initial_lr = 1e-2
         self.weight_decay = 3e-5
         self.oversample_foreground_percent = 0.33
-        self.num_iterations_per_epoch = 250
+        self.num_iterations_per_epoch = 75
         self.num_val_iterations_per_epoch = 50
-        self.num_epochs = 1000
+        self.num_epochs = 300
         self.current_epoch = 0
-        self.enable_deep_supervision = True
+        self.enable_deep_supervision = False
 
         ### Dealing with labels/regions
         self.label_manager = self.plans_manager.get_label_manager(dataset_json)
@@ -385,7 +385,7 @@ class nnUNetTrainer(object):
 
             self.batch_size = batch_size_per_GPU[my_rank]
             self.oversample_foreground_percent = oversample_percent
-
+    # 损失函数
     def _build_loss(self):
         if self.label_manager.has_regions:
             loss = DC_and_BCE_loss({},
@@ -896,6 +896,7 @@ class nnUNetTrainer(object):
             mod = mod._orig_mod
 
         mod.decoder.deep_supervision = enabled
+        # pass
 
     def on_train_start(self):
         # dataloaders must be instantiated here (instead of __init__) because they need access to the training data
@@ -992,6 +993,8 @@ class nnUNetTrainer(object):
         # So autocast will only be active if we have a cuda device.
         with autocast(self.device.type, enabled=True) if self.device.type == 'cuda' else dummy_context():
             output = self.network(data)
+            # output[2,2,d,w,h]
+            # target[2,1,d,w,h]
             # del data
             l = self.loss(output, target)
 
@@ -1041,7 +1044,7 @@ class nnUNetTrainer(object):
             del data
             l = self.loss(output, target)
 
-        # we only need the output with the highest output resolution (if DS enabled)
+        # 只需要具有最高输出分辨率的输出（如果启用了 DS）
         if self.enable_deep_supervision:
             output = output[0]
             target = target[0]

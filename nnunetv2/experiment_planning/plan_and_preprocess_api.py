@@ -143,7 +143,8 @@ def preprocess_dataset(dataset_id: int,
 
 def preprocess(dataset_ids: List[int],
                plans_identifier: str = 'nnUNetPlans',
-               configurations: Union[Tuple[str], List[str]] = ('2d', '3d_fullres', '3d_lowres'),
+            #    configurations: Union[Tuple[str], List[str]] = ('2d', '3d_fullres', '3d_lowres'),
+               configurations: Union[Tuple[str], List[str]] = ('3d_fullres'),
                num_processes: Union[int, Tuple[int, ...], List[int]] = (8, 4, 8),
                verbose: bool = False):
     for d in dataset_ids:
